@@ -1094,7 +1094,8 @@ def _get_and_verify_max_len(
         # Some models might have a separate key for specifying model_max_length
         # that will be bigger than derived_max_model_len. We compare user input
         # with model_max_length and allow this override when it's smaller.
-        model_max_length = getattr(hf_config, "model_max_length", None)
+    #    model_max_length = getattr(hf_config, "model_max_length", None)
+        model_max_length = 8192
         if model_max_length is not None and max_model_len <= model_max_length:
             pass
         else:
