@@ -165,3 +165,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("grouped_gemm", &torch_ext::grouped_gemm, "Grouped GEMM with bias");
     m.def("preprocess_weights_for_mixed_gemm", &torch_ext::preprocess_weights_for_mixed_gemm, "Preprocess weights for mixed GEMM");
 }
+
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    pybind11::module ops = m.def_submodule("phi_ops", "vLLM custom operators for phi");
+    ops.def("grouped_gemm", &torch_ext::grouped_gemm, "Grouped GEMM with bias");
+    ops.def("preprocess_weights_for_mixed_gemm", &torch_ext::preprocess_weights_for_mixed_gemm, "Preprocess weights for mixed GEMM");
+}

@@ -137,7 +137,7 @@ void moe_align_block_size(
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-    pybind11::module ops = m.def_submodule("phi_ops", "vLLM custom operators");
+    pybind11::module ops = m.def_submodule("phi_ops", "vLLM custom operators for phi");
     ops.def(
     "moe_align_block_size",
     &moe_align_block_size,
