@@ -283,6 +283,7 @@ endif()
 #
 
 set(VLLM_PHI_EXT_SRC
+  "csrc/phi/torch_bindings.cpp"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
