@@ -302,7 +302,7 @@ set_source_files_properties(
           "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
           PROPERTIES
           COMPILE_FLAGS
-          "-gencode arch=compute_80a,code=sm_80a")
+          "-gencode arch=compute_80,code=sm_80")
 
 #
 # Copy GPU compilation flags+update for phi,

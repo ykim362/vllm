@@ -6,13 +6,13 @@
 
 #include "moe_gemm_kernels.h"
 #include "moe_kernels.h"
-#include "torch/extension.h"
-
 
 #include "c10/cuda/CUDAStream.h"
 
 #include "cutlass_extensions/gemm_configs.h"
 #include "cutlass_preprocessors.h"
+
+#include <torch/all.h>
 
 using torch::Tensor;
 

@@ -1,4 +1,3 @@
-#include <torch/extension.h>
 #include <ATen/cuda/CUDAContext.h>
 
 #include <ATen/ATen.h>
