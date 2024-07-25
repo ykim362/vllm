@@ -279,6 +279,62 @@ else()
 endif()
 
 #
+# _phi_C extension
+#
+
+set(VLLM_PHI_EXT_SRC
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/cutlass_heuristic.cpp"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/cutlass_preprocessors.cpp"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/moe_kernels.cu"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/th_moe_ops.cc"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/tllmException.cpp"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/logger.cpp"
+  "csrc/phi/moe/tensorrt_moe_grouped_gemm/stringUtils.cpp"
+  )
+
+#
+# Copy GPU compilation flags+update for phi,
+# this was removed in source and in case for new file
+#
+
+set(VLLM_PHI_GPU_FLAGS ${VLLM_GPU_FLAGS})
+list(REMOVE_ITEM VLLM_PHI_GPU_FLAGS
+  "-D__CUDA_NO_HALF_OPERATORS__"
+  "-D__CUDA_NO_HALF_CONVERSIONS__"
+  "-D__CUDA_NO_BFLOAT16_CONVERSIONS__"
+  "-D__CUDA_NO_HALF2_OPERATORS__")
+
+# Only enable when SM80(A100)
+if (${VLLM_GPU_LANG} STREQUAL "CUDA")
+  set(VLLM_PHI_GPU_ARCHES)
+  foreach(ARCH ${VLLM_GPU_ARCHES})
+    string_to_ver(CODE_VER ${ARCH})
+    if (CODE_VER EQUAL 8.0)
+      list(APPEND VLLM_PHI_GPU_ARCHES ${ARCH})
+    endif()
+  endforeach()
+  message(STATUS "Phi C extension target arches: ${VLLM_PHI_GPU_ARCHES}")
+endif()
+
+if (VLLM_PHI_GPU_ARCHES)
+  define_gpu_extension_target(
+    _phi_C
+    DESTINATION vllm
+    LANGUAGE ${VLLM_GPU_LANG}
+    SOURCES ${VLLM_PHI_EXT_SRC}
+    COMPILE_FLAGS ${VLLM_PHI_GPU_FLAGS}
+    ARCHITECTURES ${VLLM_PHI_GPU_ARCHES}
+    USE_SABI 3
+    WITH_SOABI)
+else()
+  message(WARNING "Unable to create _phi_C target because none of the "
+    "requested architectures (${VLLM_GPU_ARCHES}) are supported, i.e. == 8.0")
+endif()
+
+#
 # Add the `default` target which detects which extensions should be
 # built based on platform/architecture.  This is the same logic that
 # setup.py uses to select which extensions should be built and should
