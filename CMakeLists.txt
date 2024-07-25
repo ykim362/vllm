@@ -285,16 +285,23 @@ endif()
 set(VLLM_PHI_EXT_SRC
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/cutlass_heuristic.cpp"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/cutlass_preprocessors.cpp"
-  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
-  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_kernels.cu"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/th_moe_ops.cc"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/tllmException.cpp"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/logger.cpp"
   "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/stringUtils.cpp"
   "csrc/phi/moe/utils/moe_align_block_size_kernels.cu"
   )
+
+set_source_files_properties(
+          "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
+          "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
+          "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
+          PROPERTIES
+          COMPILE_FLAGS
+          "-gencode arch=compute_80a,code=sm_80a")
 
 #
 # Copy GPU compilation flags+update for phi,
@@ -307,6 +314,10 @@ list(REMOVE_ITEM VLLM_PHI_GPU_FLAGS
   "-D__CUDA_NO_HALF_CONVERSIONS__"
   "-D__CUDA_NO_BFLOAT16_CONVERSIONS__"
   "-D__CUDA_NO_HALF2_OPERATORS__")
+
+list(APPEND VLLM_PHI_GPU_FLAGS
+  "-std=c++20"
+)
 
 # Only enable when SM80(A100)
 if (${VLLM_GPU_LANG} STREQUAL "CUDA")
@@ -324,6 +335,9 @@ if (VLLM_PHI_GPU_ARCHES)
   set(VLLM_PHI_INCLUDE_DIR
     "${CMAKE_SOURCE_DIR}/csrc/phi/moe/tensorrt_llm_moe_grouped_gemm"
     "${CMAKE_SOURCE_DIR}/csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/include"
+    "${CMAKE_SOURCE_DIR}/csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/cutlass_extensions/include"
+    "${CUTLASS_INCLUDE_DIR}"
+    "${CUTLASS_TOOLS_UTIL_INCLUDE_DIR}"
   )
   define_gpu_extension_target(
     _phi_C
@@ -332,7 +346,7 @@ if (VLLM_PHI_GPU_ARCHES)
     SOURCES ${VLLM_PHI_EXT_SRC}
     COMPILE_FLAGS ${VLLM_PHI_GPU_FLAGS}
     ARCHITECTURES ${VLLM_PHI_GPU_ARCHES}
-    INCLUDE_DIRECTORIES ${CUTLASS_INCLUDE_DIR};${CUTLASS_TOOLS_UTIL_INCLUDE_DIR};${VLLM_PHI_INCLUDE_DIR}
+    INCLUDE_DIRECTORIES ${VLLM_PHI_INCLUDE_DIR}
     USE_SABI 3
     WITH_SOABI)
 else()
