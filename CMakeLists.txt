@@ -283,16 +283,17 @@ endif()
 #
 
 set(VLLM_PHI_EXT_SRC
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/cutlass_heuristic.cpp"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/cutlass_preprocessors.cpp"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/moe_kernels.cu"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/th_moe_ops.cc"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/tllmException.cpp"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/logger.cpp"
-  "csrc/phi/moe/tensorrt_moe_grouped_gemm/stringUtils.cpp"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fp16_int8_gemm_fg_scaleonly.cu"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/fused_moe_gemm_launcher_sm80.cu"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/cutlass_heuristic.cpp"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/cutlass_preprocessors.cpp"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_gemm_kernels_fp16_uint8.cu"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/moe_kernels.cu"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/th_moe_ops.cc"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/tllmException.cpp"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/logger.cpp"
+  "csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/stringUtils.cpp"
+  "csrc/phi/moe/utils/moe_align_block_size_kernels.cu"
   )
 
 #
@@ -364,4 +365,9 @@ if(VLLM_GPU_LANG STREQUAL "CUDA" OR VLLM_GPU_LANG STREQUAL "HIP")
     message(STATUS "Enabling punica extension.")
     add_dependencies(default _punica_C)
   endif()
+endif()
+
+if(VLLM_PHI_GPU_ARCHES)
+  message(STATUS "Enabling phi extension.")
+  add_dependencies(default _phi_C)
 endif()
