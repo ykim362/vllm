@@ -321,6 +321,10 @@ if (${VLLM_GPU_LANG} STREQUAL "CUDA")
 endif()
 
 if (VLLM_PHI_GPU_ARCHES)
+  set(VLLM_PHI_INCLUDE_DIR
+    "${CMAKE_SOURCE_DIR}/csrc/phi/moe/tensorrt_llm_moe_grouped_gemm"
+    "${CMAKE_SOURCE_DIR}/csrc/phi/moe/tensorrt_llm_moe_grouped_gemm/include"
+  )
   define_gpu_extension_target(
     _phi_C
     DESTINATION vllm
@@ -328,6 +332,7 @@ if (VLLM_PHI_GPU_ARCHES)
     SOURCES ${VLLM_PHI_EXT_SRC}
     COMPILE_FLAGS ${VLLM_PHI_GPU_FLAGS}
     ARCHITECTURES ${VLLM_PHI_GPU_ARCHES}
+    INCLUDE_DIRECTORIES ${CUTLASS_INCLUDE_DIR};${CUTLASS_TOOLS_UTIL_INCLUDE_DIR};${VLLM_PHI_INCLUDE_DIR}
     USE_SABI 3
     WITH_SOABI)
 else()
