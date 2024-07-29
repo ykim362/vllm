@@ -25,7 +25,7 @@ using torch::Tensor;
     CHECK_CONTIGUOUS(x);                                                                                               \
     CHECK_TYPE(x, st)
 
-namespace torch_ext
+namespace phi_c
 {
     template <typename T>
     T* get_ptr(Tensor t)

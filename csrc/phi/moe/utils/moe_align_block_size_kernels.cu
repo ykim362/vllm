@@ -8,7 +8,7 @@
 
 #define CEILDIV(x,y) (((x) + (y) - 1) / (y))
 
-namespace vllm {
+namespace phi_c {
 
 namespace {
 __device__ __forceinline__ int32_t index(int32_t total_col, int32_t row, int32_t col) {
@@ -99,7 +99,6 @@ __global__ void moe_align_block_size_kernel(scalar_t *__restrict__ topk_ids,
         ++tokens_cnts[index(num_experts, threadIdx.x, expert_id)];
     }
 }
-}
 
 void moe_align_block_size(
     torch::Tensor topk_ids,
@@ -133,4 +132,6 @@ void moe_align_block_size(
             expert_length.data_ptr<int32_t>()
             );
     });
+}
+
 }

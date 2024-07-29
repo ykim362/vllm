@@ -9,28 +9,20 @@ import torch
 import triton
 import triton.language as tl
 
-from vllm.model_executor.layers.fused_moe import gather_scatter_kernel
+import vllm.model_executor.layers.phi_ops.moe.tensorrt_llm_moe.gather_scatter_kernel as gather_scatter_kernel
+
+import vllm._phi_C
+
+phi_ops_moe_align_block_size = torch.ops._C_phi_ops.moe_align_block_size
+phi_ops_grouped_gemm = torch.ops._C_phi_ops.grouped_gemm
 
 from vllm import _custom_ops as ops
 from vllm.logger import init_logger
 from vllm.utils import print_warning_once
 
-import pycublas.trtllm_moe_grouped_gemm as moe_kernel
+# import pycublas.trtllm_moe_grouped_gemm as phi_ops
 
 logger = init_logger(__name__)
-
-# Ampere FP8 kernel
-from torch.utils.cpp_extension import load
-
-print_warning_once("Loading ampere_fp8 kernel")
-ampere_fp8 = load(
-    name="ampere_fp8",
-    sources=[
-        os.path.join(
-            os.path.dirname(__file__), "csrc", "moe_align_block_size_kernels.cu"
-        )
-    ],
-)
 
 moe_gg_kernel_config = {
     1: (13, 21, 0.4587008017301559),
@@ -95,7 +87,7 @@ def moe_align_block_size(
         (num_experts + 1), dtype=torch.int32, device=topk_ids.device
     )
 
-    ampere_fp8.ops.moe_align_block_size(
+    phi_ops_moe_align_block_size(
         topk_ids,
         num_experts,
         block_size,
@@ -195,7 +187,7 @@ def fused_moe(
 
     total_rows_before_expert = expert_off[1:]
 
-    moe_kernel.grouped_gemm(
+    phi_ops_grouped_gemm(
         gathered_cache,
         w1,
         w1_scale,
@@ -207,7 +199,7 @@ def fused_moe(
 
     ops.silu_and_mul(gathered_cache_2, gathered_cache_1.view(-1, N))
 
-    moe_kernel.grouped_gemm(
+    phi_ops_grouped_gemm(
         gathered_cache_2.view(torch.float16),
         w2.view(torch.int8),
         w2_scale.view(hidden_states.dtype),

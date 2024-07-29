@@ -2,8 +2,6 @@ import torch
 import triton
 import triton.language as tl
 
-import pytest
-
 import vllm
 from vllm import _custom_ops as ops
 
@@ -12,43 +10,6 @@ from functools import wraps
 
 import torch
 import functools
-
-def timeit_decorator(times=100):
-    def decorator(function_call):
-        @functools.wraps(function_call)
-        def wrapper(*args, **kwargs):
-
-            # cuda graph
-            s = torch.cuda.Stream()
-            s.wait_stream(torch.cuda.current_stream())
-            with torch.cuda.stream(s):
-                for i in range(3):
-                    function_call(*args, **kwargs)
-            torch.cuda.current_stream().wait_stream(s)
-
-            g = torch.cuda.CUDAGraph()
-            with torch.cuda.graph(g):
-                function_call(*args, **kwargs)
-
-            all_time = 0.0
-            start = torch.cuda.Event(enable_timing=True)
-            end = torch.cuda.Event(enable_timing=True)
-            start.record()
-            for j in range(times):
-                #function_call(*args, **kwargs)
-                g.replay()
-
-            end.record()
-            torch.cuda.synchronize()
-            elapsed_time_ms = start.elapsed_time(end)
-            all_time = elapsed_time_ms
-            
-            avg_time = all_time / times
-            print(f"{function_call.__name__} average time: {avg_time} ms")
-            return function_call(*args, **kwargs)
-        
-        return wrapper
-    return decorator
 
 
 @triton.jit
@@ -171,60 +132,6 @@ def moe_scatter(
 
         a_ptrs += BLOCK_SIZE_K * stride_ak
         c_ptrs += BLOCK_SIZE_K * stride_ck
-
-
-def sparsemixer(scores, top_k, jitter_eps=0.01):
-    assert top_k == 2
-
-    ################ first expert ################
-
-    with torch.no_grad():
-        # compute mask for sparsity
-        mask_logits_threshold, max_ind = scores.max(dim=-1, keepdim=True)
-        factor = scores.abs().clamp(min=mask_logits_threshold)
-        mask_logits_threshold = ((mask_logits_threshold - scores) / factor) > (
-            2 * jitter_eps
-        )
-
-    # apply mask
-    masked_gates = scores.masked_fill(mask_logits_threshold, float("-inf"))
-    selected_experts = max_ind
-
-    # compute scores for gradients
-    masked_gates = torch.softmax(masked_gates, dim=-1)
-    multiplier_o = masked_gates.gather(dim=-1, index=selected_experts)
-
-    multiplier = multiplier_o
-
-    # masked out first expert
-    masked_scores = torch.scatter(
-        scores,
-        -1,
-        selected_experts,
-        float("-inf"),
-    )
-    with torch.no_grad():
-        # compute mask for sparsity
-        mask_logits_threshold, max_ind = masked_scores.max(dim=-1, keepdim=True)
-        factor = scores.abs().clamp(min=mask_logits_threshold)
-        mask_logits_threshold = ((mask_logits_threshold - scores) / factor) > (
-            2 * jitter_eps
-        )
-
-    # apply mask
-    masked_gates_top2 = masked_scores.masked_fill(mask_logits_threshold, float("-inf"))
-    selected_experts_top2 = max_ind
-    # compute scores for gradients
-    masked_gates_top2 = torch.softmax(masked_gates_top2, dim=-1)
-    multiplier_top2 = masked_gates_top2.gather(dim=-1, index=selected_experts_top2)
-
-    multiplier = torch.concat((multiplier, multiplier_top2), dim=-1)
-    selected_experts = torch.concat((selected_experts, selected_experts_top2), dim=-1)
-
-    return (
-        multiplier,
-        selected_experts,
-    )
 
 
 def moe_align_block_size(
