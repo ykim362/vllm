@@ -106,8 +106,8 @@ namespace torch_ext
                              Tensor weight_scales,
                              Tensor total_rows_before_expert,
                              Tensor out,
-                             int activation_type,
-                             int config_id = 0)
+                             int64_t activation_type,
+                             int64_t config_id = 0)
     {
         const at::ScalarType _st = activations.scalar_type();
         CHECK_INPUT(activations, _st);
