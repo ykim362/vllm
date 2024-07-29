@@ -16,7 +16,7 @@
 // https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ptttacy8y1u9
 // https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/README.md#annotations
 
-TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, _phi_ops), phi_ops) {
+TORCH_LIBRARY_EXPAND(CONCAT(TORCH_EXTENSION_NAME, _phi_ops), phi_ops) {
     // Aligning the number of tokens to be processed by each expert such
     // that it is divisible by the block size.
     phi_ops.def(
