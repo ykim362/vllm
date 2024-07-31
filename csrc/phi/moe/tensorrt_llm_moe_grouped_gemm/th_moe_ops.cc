@@ -101,13 +101,13 @@ namespace phi_c
         return res;
     }
 
-    Tensor grouped_gemm(Tensor activations,
-                             Tensor weights,
-                             Tensor weight_scales,
-                             Tensor total_rows_before_expert,
-                             Tensor out,
-                             int64_t activation_type,
-                             int64_t config_id = 0)
+    void grouped_gemm(Tensor activations,
+                    Tensor weights,
+                    Tensor weight_scales,
+                    Tensor total_rows_before_expert,
+                    Tensor out,
+                    int64_t activation_type,
+                    int64_t config_id = 0)
     {
         const at::ScalarType _st = activations.scalar_type();
         CHECK_INPUT(activations, _st);
@@ -121,7 +121,7 @@ namespace phi_c
             if (weights.scalar_type() == torch::kInt8)
             {
                 CHECK_INPUT(weights, torch::kInt8);
-                return grouped_gemm_helper<__half, uint8_t>(
+                grouped_gemm_helper<__half, uint8_t>(
                     activations, weights, weight_scales, total_rows_before_expert, out, activation_type, config_id);
             }
             else

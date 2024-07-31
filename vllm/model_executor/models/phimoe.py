@@ -355,7 +355,7 @@ class PhiMoEAttention(nn.Module):
                  rope_theta: float = 10000,
                  cache_config: Optional[CacheConfig] = None,
                  quant_config: Optional[QuantizationConfig] = None,
-                 # sliding_window: Optional[int] = None
+                 sliding_window: Optional[int] = None
                  ) -> None:
         super().__init__()
         self.hidden_size = hidden_size

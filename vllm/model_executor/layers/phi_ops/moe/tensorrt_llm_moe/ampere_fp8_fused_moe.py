@@ -13,8 +13,8 @@ import vllm.model_executor.layers.phi_ops.moe.tensorrt_llm_moe.gather_scatter_ke
 
 import vllm._phi_C
 
-phi_ops_moe_align_block_size = torch.ops._C_phi_ops.moe_align_block_size
-phi_ops_grouped_gemm = torch.ops._C_phi_ops.grouped_gemm
+phi_ops_moe_align_block_size = torch.ops._phi_C.moe_align_block_size
+phi_ops_grouped_gemm = torch.ops._phi_C.grouped_gemm
 
 from vllm import _custom_ops as ops
 from vllm.logger import init_logger

@@ -16,7 +16,7 @@
 // https://docs.google.com/document/d/1_W62p8WJOQQUzPsJYa7s701JXt0qf2OfLub2sbkHOaU/edit#heading=h.ptttacy8y1u9
 // https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/README.md#annotations
 
-TORCH_LIBRARY_EXPAND(CONCAT(TORCH_EXTENSION_NAME, _phi_ops), phi_ops) {
+TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, phi_ops) {
     // Aligning the number of tokens to be processed by each expert such
     // that it is divisible by the block size.
     phi_ops.def(
@@ -25,7 +25,6 @@ TORCH_LIBRARY_EXPAND(CONCAT(TORCH_EXTENSION_NAME, _phi_ops), phi_ops) {
         "                     int block_size,"
         "                     Tensor! sorted_token_ids,"
         "                     Tensor! experts_ids,"
-        "                     Tensor! num_tokens_post_pad,"
         "                     Tensor! num_tokens_post_pad,"
         "                     Tensor! expert_offset,"
         "                     Tensor! expert_length"
@@ -46,3 +45,5 @@ TORCH_LIBRARY_EXPAND(CONCAT(TORCH_EXTENSION_NAME, _phi_ops), phi_ops) {
     phi_ops.def("preprocess_weights_for_mixed_gemm(Tensor row_major_quantized_weight) -> (Tensor processed_tensor)");
     phi_ops.impl("preprocess_weights_for_mixed_gemm", torch::kCUDA, &phi_c::preprocess_weights_for_mixed_gemm);
 }
+
+REGISTER_EXTENSION(TORCH_EXTENSION_NAME)

@@ -5,7 +5,7 @@
 namespace phi_c
 {
     using torch::Tensor;
-    Tensor grouped_gemm(Tensor activations,
+    void grouped_gemm(Tensor activations,
                              Tensor weights,
                              Tensor weight_scales,
                              Tensor total_rows_before_expert,
