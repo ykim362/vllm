@@ -214,7 +214,7 @@ def sparsemixer(scores, top_k, jitter_eps=0.01):
     )
 
 
-class PhiMoEMoE(nn.Module):
+class PhiMoE(nn.Module):
     """A tensor-parallel MoE implementation for PhiMoE that shards each expert
     across all ranks.
 
@@ -368,7 +368,7 @@ class PhiMoEDecoderLayer(nn.Module):
             cache_config=cache_config,
             quant_config=quant_config,
         )
-        self.block_sparse_moe = PhiMoEMoE(
+        self.block_sparse_moe = PhiMoE(
             num_experts=config.num_local_experts,
             top_k=config.num_experts_per_tok,
             hidden_size=config.hidden_size,

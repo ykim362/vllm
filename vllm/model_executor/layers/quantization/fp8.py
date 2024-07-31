@@ -255,7 +255,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
         self.quant_config = quant_config
 
         if self.is_sm80():
-            from vllm.model_executor.layers.phi_ops.moe.tensorrt_llm_moe.ampere_fp8_fused_moe import fused_moe
+            from vllm.model_executor.layers.phi_ops.moe.vllm_moe.ampere_fp8_fused_moe import fused_moe
             self.fused_moe_forward = fused_moe
         else:
             from vllm.model_executor.layers.fused_moe import fused_moe
@@ -362,7 +362,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                     expert] = ops.scaled_fp8_quant(
                         layer.w2_weight.data[expert, :, :])
 
-            if self.is_sm80():
+            if self.is_sm80() and False:
                 print_warning_once("Preprocessing weights for A100 FP8 fused MoE")
                 w13_weight =  torch.ops._phi_C.preprocess_weights_for_mixed_gemm(w13_weight.view(torch.int8).transpose(1,2).contiguous().cpu()).to(w13_weight.device)
                 w2_weight =  torch.ops._phi_C.preprocess_weights_for_mixed_gemm(w2_weight.view(torch.int8).transpose(1,2).contiguous().cpu()).to(w2_weight.device)
