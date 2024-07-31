@@ -361,10 +361,6 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                 w2_weight[expert, :, :], layer.w2_scale[
                     expert] = ops.scaled_fp8_quant(
                         layer.w2_weight.data[expert, :, :])
-            layer.w13_weight = torch.nn.Parameter(w13_weight,
-                                                  requires_grad=False)
-            layer.w2_weight = torch.nn.Parameter(w2_weight,
-                                                 requires_grad=False)
 
             if self.is_sm80():
                 print_warning_once("Preprocessing weights for A100 FP8 fused MoE")
@@ -384,6 +380,11 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                     .contiguous(),
                     requires_grad=False,
                 )
+            
+            layer.w13_weight = torch.nn.Parameter(w13_weight,
+                                                  requires_grad=False)
+            layer.w2_weight = torch.nn.Parameter(w2_weight,
+                                                 requires_grad=False)
 
             return
 
