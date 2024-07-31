@@ -121,6 +121,9 @@ def fused_moe(
     a1_scale: Optional[torch.Tensor] = None,
     a2_scale: Optional[torch.Tensor] = None,
     routing_func: Callable = torch.topk,
+    use_grouped_topk=False,
+    num_expert_group=0,
+    topk_group=0,
     cfg_id_0=-1,
     cfg_id_1=-1,
 ) -> torch.Tensor:

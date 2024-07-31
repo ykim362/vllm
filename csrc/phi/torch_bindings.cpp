@@ -43,7 +43,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, phi_ops) {
     phi_ops.impl("grouped_gemm", torch::kCUDA, &phi_c::grouped_gemm);    
 
     phi_ops.def("preprocess_weights_for_mixed_gemm(Tensor row_major_quantized_weight) -> (Tensor processed_tensor)");
-    phi_ops.impl("preprocess_weights_for_mixed_gemm", torch::kCUDA, &phi_c::preprocess_weights_for_mixed_gemm);
+    phi_ops.impl("preprocess_weights_for_mixed_gemm", torch::kCPU, &phi_c::preprocess_weights_for_mixed_gemm);
 }
 
 REGISTER_EXTENSION(TORCH_EXTENSION_NAME)

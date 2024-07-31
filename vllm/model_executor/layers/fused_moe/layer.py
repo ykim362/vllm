@@ -71,10 +71,11 @@ class UnquantizedFusedMoEMethod(FusedMoEMethodBase, CustomOp):
         use_grouped_topk: bool = False,
         num_expert_group: Optional[int] = None,
         topk_group: Optional[int] = None,
+        routing_func: callable = torch.topk,
     ) -> torch.Tensor:
         return self.forward(x, layer.w13_weight, layer.w2_weight,
                             router_logits, top_k, renormalize,
-                            use_grouped_topk, num_expert_group, topk_group)
+                            use_grouped_topk, num_expert_group, topk_group, routing_func)
 
     def forward_cuda(
         self,
@@ -87,6 +88,7 @@ class UnquantizedFusedMoEMethod(FusedMoEMethodBase, CustomOp):
         use_grouped_topk: bool,
         num_expert_group: Optional[int],
         topk_group: Optional[int],
+        routing_func: callable = torch.topk,
     ) -> torch.Tensor:
         from vllm.model_executor.layers.fused_moe.fused_moe import fused_moe
         return fused_moe(x,
@@ -98,7 +100,8 @@ class UnquantizedFusedMoEMethod(FusedMoEMethodBase, CustomOp):
                          inplace=True,
                          use_grouped_topk=use_grouped_topk,
                          num_expert_group=num_expert_group,
-                         topk_group=topk_group)
+                         topk_group=topk_group,
+                         routing_func=routing_func)
 
     def forward_cpu(self, *args, **kwargs):
         raise NotImplementedError(
@@ -115,11 +118,13 @@ class UnquantizedFusedMoEMethod(FusedMoEMethodBase, CustomOp):
         use_grouped_topk: bool,
         num_expert_group: Optional[int],
         topk_group: Optional[int],
+        routing_func: callable = torch.topk,
     ) -> torch.Tensor:
         from vllm.model_executor.layers.fused_moe.moe_pallas import fused_moe
         assert not use_grouped_topk
         assert num_expert_group is None
         assert topk_group is None
+        assert routing_func == torch.topk
         return fused_moe(x, w1, w2, router_logits, top_k, renormalize)
 
 
@@ -159,6 +164,7 @@ class FusedMoE(torch.nn.Module):
         quant_config: Optional[QuantizationConfig] = None,
         tp_size: Optional[int] = None,
         prefix: str = "",
+        routing_func: callable = torch.topk,
     ):
         super().__init__()
 
@@ -192,6 +198,8 @@ class FusedMoE(torch.nn.Module):
             intermediate_size=self.intermediate_size_per_partition,
             params_dtype=params_dtype,
             weight_loader=self.weight_loader)
+        
+        self.routing_func = routing_func
 
     def weight_loader(self, param: torch.nn.Parameter,
                       loaded_weight: torch.Tensor, weight_name: str,
@@ -255,7 +263,9 @@ class FusedMoE(torch.nn.Module):
             renormalize=self.renormalize,
             use_grouped_topk=self.use_grouped_topk,
             num_expert_group=self.num_expert_group,
-            topk_group=self.topk_group)
+            topk_group=self.topk_group,
+            routing_func=self.routing_func,
+            )
 
         if self.reduce_results and self.tp_size > 1:
             final_hidden_states = tensor_model_parallel_all_reduce(
