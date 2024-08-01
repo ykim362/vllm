@@ -253,7 +253,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
 
     def __init__(self, quant_config: Fp8Config):
         self.quant_config = quant_config
-        self.fast_a100_fp8 = True
+        self.fast_a100_fp8 = False
         self.gpu_memory_saving_mode = True
 
         if self.is_sm80():
