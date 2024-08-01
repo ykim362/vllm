@@ -133,26 +133,6 @@ def moe_scatter(
         a_ptrs += BLOCK_SIZE_K * stride_ak
         c_ptrs += BLOCK_SIZE_K * stride_ck
 
-
-def moe_align_block_size(
-    topk_ids: torch.Tensor, block_size: int, num_experts: int
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    sorted_ids = torch.empty(
-        (topk_ids.numel() + num_experts * (block_size - 1),),
-        dtype=torch.int32,
-        device=topk_ids.device,
-    )
-    expert_ids = torch.empty(
-        (topk_ids.numel() + num_experts,), dtype=torch.int32, device=topk_ids.device
-    )
-    sorted_ids.fill_(topk_ids.numel())
-    num_tokens_post_pad = torch.empty((1), dtype=torch.int32, device=topk_ids.device)
-    ops.moe_align_block_size(
-        topk_ids, num_experts, block_size, sorted_ids, expert_ids, num_tokens_post_pad
-    )
-    return sorted_ids, expert_ids, num_tokens_post_pad
-
-
 def invoke_moe_gather(
     inp,
     outp,

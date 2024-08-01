@@ -334,7 +334,6 @@ def scaled_fp8_quant(
         Tuple[torch.Tensor, torch.Tensor]: The output tensor in FP8 and
             scaling factor.
     """
-    input = input.cuda()
     # This code assumes batch_dim and num_tokens are flattened
     assert (input.ndim == 2)
     shape: Union[Tuple[int, int], torch.Size] = input.shape
@@ -357,7 +356,6 @@ def scaled_fp8_quant(
         assert (scale.numel() == 1 or num_token_padding is None)
         torch.ops._C.static_scaled_fp8_quant(output, input, scale)
 
-    del input
     return output, scale
 
 
