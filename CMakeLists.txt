@@ -317,7 +317,7 @@ list(REMOVE_ITEM VLLM_PHI_GPU_FLAGS
   "-D__CUDA_NO_HALF2_OPERATORS__")
 
 list(APPEND VLLM_PHI_GPU_FLAGS
-  "-std=c++20"
+  "-std=c++17"
 )
 
 # Only enable when SM80(A100)
