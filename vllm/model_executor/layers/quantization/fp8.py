@@ -266,10 +266,13 @@ class Fp8MoEMethod(FusedMoEMethodBase):
         self.gpu_memory_saving_mode = True
 
         if self.is_sm80():
+            print_warning_once("Detected A100.")
             if not self.fast_a100_fp8:
+                print_warning_once("Using Triton FP8 MoE Kernel.")
                 from vllm.model_executor.layers.phi_ops.moe.vllm_moe.ampere_fp8_fused_moe import fused_moe
                 self.fused_moe_forward = fused_moe
             else:
+                print_warning_once("Using Cutlass FP8 MoE Kernel.")
                 from vllm.model_executor.layers.phi_ops.moe.tensorrt_llm_moe.ampere_fp8_fused_moe import fused_moe
                 self.fused_moe_forward = fused_moe
         else:
@@ -352,7 +355,6 @@ class Fp8MoEMethod(FusedMoEMethodBase):
             layer.a2_scale = None
 
     def process_weights_after_loading(self, layer: Module) -> None:
-
         # If checkpoint is fp16, quantize in place.
         if not self.quant_config.is_checkpoint_fp8_serialized:
             w13_weight = torch.empty_like(layer.w13_weight.data,
@@ -397,11 +399,14 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                     .contiguous(),
                     requires_grad=False,
                 )
-
-            layer.w13_weight = torch.nn.Parameter(w13_weight,
-                                                  requires_grad=False)
-            layer.w2_weight = torch.nn.Parameter(w2_weight,
-                                                 requires_grad=False)
+            
+            layer.register_parameter("w13_weight_fp8", torch.nn.Parameter(w13_weight))
+            layer.register_parameter("w2_weight_fp8", torch.nn.Parameter(w2_weight))
+            
+            layer.w13_weight = torch.nn.Parameter(torch.empty(0),
+                                                requires_grad=False)
+            layer.w2_weight = torch.nn.Parameter(torch.empty(0),
+                                                requires_grad=False)
 
             return
 
@@ -461,8 +466,8 @@ class Fp8MoEMethod(FusedMoEMethodBase):
               ) -> torch.Tensor:
 
         return self.fused_moe_forward(x,
-                                    layer.w13_weight,
-                                    layer.w2_weight,
+                                    layer.w13_weight_fp8,
+                                    layer.w2_weight_fp8,
                                     router_logits,
                                     top_k,
                                     renormalize=renormalize,
