@@ -502,6 +502,7 @@ class ModelRunner:
             for _ in range(graph_batch_size - batch_size):
                 input_tokens.append(0)
                 input_positions.append(0)
+                max_seq_tokens_list.append(0)
                 slot_mapping.append(_PAD_SLOT_ID)
                 context_lens.append(1)
                 block_tables.append([])
