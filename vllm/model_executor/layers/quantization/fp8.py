@@ -262,7 +262,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
 
     def __init__(self, quant_config: Fp8Config):
         self.quant_config = quant_config
-        self.fast_a100_fp8 = False
+        self.fast_a100_fp8 = True
         self.gpu_memory_saving_mode = True
 
         if self.is_sm80():
@@ -401,8 +401,8 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                 )
             
             # This is to skip the move to cpu 
-            layer.register_parameter("w13_weight_fp8", torch.nn.Parameter(w13_weight))
-            layer.register_parameter("w2_weight_fp8", torch.nn.Parameter(w2_weight))
+            layer.register_parameter("w13_weight_fp8", torch.nn.Parameter(w13_weight, requires_grad=False))
+            layer.register_parameter("w2_weight_fp8", torch.nn.Parameter(w2_weight, requires_grad=False))
             
             layer.w13_weight = torch.nn.Parameter(torch.empty(0),
                                                 requires_grad=False)
