@@ -1,9 +1,9 @@
 #include "cache.h"
 #include "cuda_utils.h"
 #include "ops.h"
-#include "registration.h"
 #include "phi_ops.h"
 
+#include "core/registration.h"
 #include <torch/library.h>
 
 // Note on op signatures:
