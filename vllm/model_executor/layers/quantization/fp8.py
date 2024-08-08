@@ -400,6 +400,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                     requires_grad=False,
                 )
             
+            # This is to skip the move to cpu 
             layer.register_parameter("w13_weight_fp8", torch.nn.Parameter(w13_weight))
             layer.register_parameter("w2_weight_fp8", torch.nn.Parameter(w2_weight))
             
